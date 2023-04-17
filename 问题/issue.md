@@ -211,6 +211,57 @@ public class GuliFeignConfig {
 
 
 
+## Git常见问题
+
+### github解决大文件的上传
+
+> git不允许上传文件超过100mb
+> 版权声明：本文为CSDN博主「Java川」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。
+> 原文链接：https://blog.csdn.net/weixin_43919632/article/details/103552220
+
+**报错**
+
+~~~git
+Push failed
+send-pack: unexpected disconnect while reading sideband packet
+Connection to github.com closed by remote host.
+sha1 file '<stdout>' write error: Broken pipe
+the remote end hung up unexpectedly
+~~~
+
+**解决**
+
+~~~git
+#设置缓存 这是500mb
+git config http.postBuffer 524288000
+~~~
+
+~~~git
+# 1、安装git-lfs
+git lfs install
+
+# 2、跟踪一些文件，那么上传大小就会变少  比如可以跟踪py结尾的文件 git lfs track "*.py"
+git lfs track "你要跟踪的大文件的拓展名"
+
+# 3、push常规操作
+git add  你要上传的大文件
+git commit -m "add large file"
+git push -u origin master
+~~~
+
+可能还是会错
+
+![20191215231241615](\image\20191215231241615.png)
+那么输入
+
+~~~git
+git config lfs.https://github.com/468336329Zc/face-recognition.git/info/lfs.                                                                                                                          locksverify false
+#然后再次push
+git push -u origin master
+~~~
+
+
+
 
 
 ## 已知问题
