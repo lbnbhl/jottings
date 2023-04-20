@@ -504,13 +504,52 @@ private static void test4() throws InterruptedException {
      save 60 10000
      ```
 
-  3. 写诗复制
+  3. 写时复制
 
-##### undo
+##### undolog
 
-##### redo
+> undo log和redo log记录物理日志不一样，它是逻辑日志。可以认为当delete一条记录时，undo
+> log中会记录一条对应的insert记录，反之亦然，当update一条记录时，它记录一条对应相反的
+> update记录。当执行rollback时，就可以从undo log中的逻辑记录读取到相应的内容并进行回滚。
+
+##### redolog
+
+> 重做日志，记录的是事务提交时数据页的物理修改，是用来实现事务的持久性。
+> 该日志文件由两部分组成：重做日志缓冲（redo log buffer）以及重做日志文件（redo log
+> file）,前者是在内存中，后者在磁盘中。当事务提交之后会把所有修改信息都存到该日志文件中, 用
+> 于在刷新脏页到磁盘,发生错误时, 进行数据恢复使用。
+
+###### 刷盘时机
+
+`InnoDB` 存储引擎为 `redo log` 的刷盘策略提供了 `innodb_flush_log_at_trx_commit` 参数，它支持三种策略：
+
+- **0** ：设置为 0 的时候，表示每次事务提交时不进行刷盘操作
+- **1** ：设置为 1 的时候，表示每次事务提交时都将进行刷盘操作（默认值）
+- **2** ：设置为 2 的时候，表示每次事务提交时都只把 redo log buffer 内容写入 page cache
+
+`innodb_flush_log_at_trx_commit` 参数默认为 1 ，也就是说当事务提交时会调用 `fsync` 对 redo log 进行刷盘
+
+另外，`InnoDB` 存储引擎有一个后台线程，每隔`1` 秒，就会把 `redo log buffer` 中的内容写到文件系统缓存（`page cache`），然后调用 `fsync` 刷盘。
+
+除了后台线程每秒`1`次的轮询操作，还有一种情况，当 `redo log buffer` 占用的空间即将达到 `innodb_log_buffer_size` 一半的时候，后台线程会主动刷盘。
+
+
 
 ##### binlog
+
+> `binlog` 是逻辑日志，记录内容是语句的原始逻辑，类似于“给 ID=2 这一行的 c 字段加 1”，属于`MySQL Server` 层。
+>
+> 不管用什么存储引擎，只要发生了表数据更新，都会产生 `binlog` 日志
+
+`binlog`会记录所有涉及更新数据的逻辑操作，并且是顺序写
+
+###### 记录格式
+
+- **statement**：原文
+- **row**:包含具体数据
+- **mixed**：混合
+
+
 
 
 
