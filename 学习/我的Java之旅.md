@@ -580,7 +580,7 @@ private static void test4() throws InterruptedException {
 
      - 第二阶段是主服务器同步数据给从服务器；
 
-       通常使用bgsave命令，通过子进程生成AOF并发送，新写入的命令放在**replication buffer 缓冲区里**
+       通常使用bgsave命令，通过子进程生成RDB并发送，新写入的命令放在**replication buffer 缓冲区里**
 
      - 第三阶段是主服务器发送新写操作命令给从服务器。
 
