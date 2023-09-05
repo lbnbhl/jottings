@@ -1,3 +1,93 @@
+## 已知问题
+
+- bean注入后对象值为null
+
+  在成员变量赋值时，调用该对象的方法，此时bean还未注入。我将变量放进方法中，问题解决
+
+- 王数据库插入数据值为null时，字段为关键词或者有参构造器没创建
+
+- ssh服务器拒绝了密码，更改了下密码，可能是密码格式不对
+
+- xshell连接时密码是灰色的，配置文件里的no改成yes
+
+- 虚拟机可以ping到baidu，物理机ping不到虚拟机
+
+  检查vnnet8网卡的配置，并诊断看是否有问题
+
+- Could not connect to Redis at 127.0.0.1:6379: Connection refused
+
+  未执行redis-server redis.conf
+
+- nested exception is io.lettuce.core.RedisConnectionException即访问不到redis
+
+  在linux中执行： **/sbin/iptables -I INPUT -p tcp --dport 6379 -j ACCEPT**
+  redis默认端口号6379是不允许进行远程连接的，所以在防火墙中设置6379开启远程服务；
+
+- nginx启动出现：Job for nginx.service failed because the control process exited with error code. See "systemctl status nginx.service" and "journalctl -xe" for details
+
+  一般是配置文件有问题
+
+- 不断弹[NACOS HTTP-POST]
+
+  项目中`pom.xml`引入了nacos依赖包却没有读取到对应的配置文件引起的，将配置文件名改成`bootstrap.扩展名`即可解决。
+
+- nacos配置文件中不能写127.0.0.1，要写真是ip
+
+- 初始化filter时tomcat启动不了
+
+  原因是，过滤器中没有[重写](https://so.csdn.net/so/search?q=重写&spm=1001.2101.3001.7020)public void init（）和 public void destroy() 方法，jdk 1.9 之后，可以不写这两个方法，如果用jdk1.8必须要写。
+
+- 项目启动不起来：Failed to configure a DataSource: 'url' attribute is not specified and no embedded datasource could be configured.Reason: Failed to determine a suitable driver class
+
+  禁用掉springboot的数据源自动配置，在启动类注解上添加排除数据源自动配置的参数即可：@SpringBootApplication(exclude= {DataSourceAutoConfiguration.class})//排除数据源的自动配置
+
+- druid的依赖
+
+- 使用ossclient的时候，出现自动注入为null，首先其自动注入类型应该为OSS接口，其次要项目加载起来了才会注入，然后运行，其次测试环境的话要使用以下爱环境才行
+
+  ~~~java
+  import org.junit.Test;
+  @SpringBootTest
+  @RunWith(SpringRunner.class)
+  @Test
+  ~~~
+
+- 如果要更改依赖中的源码
+
+  ~~~
+  只要三步：
+  
+  1.在项目的Maven Dependencies依赖里面，找到你需要修改的包，找到包里面需要修改的class文件。
+  
+  2.在你的src/main/java目录下创建一个和class文件一样的路径，然后创建一样的java文件名。
+  
+  3.把class的源码复制到java文件的源码，就可以直接修改，修改后直接保存，自动生效，也不需要替换回原来的文件，原来的位置。
+  ~~~
+
+- 报错java.lang.NoClassDefFoundError: com/alibaba/nacos/client/logging/NacosLogging
+
+  ~~~java
+  解决办法：升级nacos-config的版本
+          <dependency>
+              <groupId>com.alibaba.cloud</groupId>
+              <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
+              <version>2.2.5.RELEASE</version>
+          </dependency>
+  ~~~
+
+  
+
+- Failed to instantiate [com.zaxxer.hikari.HikariDataSource]: Factory method ‘dataSource‘ threw except
+
+  ~~~java
+  直接再启动来加上
+  @SpringBootApplication(exclude= {DataSourceAutoConfiguration.class})
+  
+  HikariDataSource是spingboot的默认数据源。但是你使用的时候并没有对它进行配置，所以就报错喽
+  ~~~
+
+  
+
 ## 微服务雪崩问题
 
 > **微服务项目中，由于一个 服务的不可用，导致服务调用者得不到返回结果，随着时间的过去，越来越多的资源得不到释放，最后导致所有服务不可用。**
@@ -264,92 +354,16 @@ git push -u origin master
 
 
 
-## 已知问题
+## 登录问题
 
-- bean注入后对象值为null
+#### OAuth 2.0的工作流程为什么不直接给客户端一个访问令牌，而是要先给客户端授权码再去请求获取访问令牌呢
 
-  在成员变量赋值时，调用该对象的方法，此时bean还未注入。我将变量放进方法中，问题解决
+![image-20230905194344749](C:\Users\Dear~柘木塘\AppData\Roaming\Typora\typora-user-images\image-20230905194344749.png)
 
-- 王数据库插入数据值为null时，字段为关键词或者有参构造器没创建
+~~~mar
+直接返回访问令牌的时
+比如通过浏览器，重定向到了授权页面，我授权后，授权服务器返回访问令牌到浏览器，浏览器再把数据给xx软件。此时我还在授权页面，需要再次重定向到xx软件。这个过程中访问令牌暴露在浏览器
+如果使用授权码的话
+这期间就授权码暴露在浏览器，我们利用授权码直接访问授权服务器，然后服务器返回我们访问令牌的话这样就避免访问
+~~~
 
-- ssh服务器拒绝了密码，更改了下密码，可能是密码格式不对
-
-- xshell连接时密码是灰色的，配置文件里的no改成yes
-
-- 虚拟机可以ping到baidu，物理机ping不到虚拟机
-
-  检查vnnet8网卡的配置，并诊断看是否有问题
-
-- Could not connect to Redis at 127.0.0.1:6379: Connection refused
-
-  未执行redis-server redis.conf
-
-- nested exception is io.lettuce.core.RedisConnectionException即访问不到redis
-
-  在linux中执行： **/sbin/iptables -I INPUT -p tcp --dport 6379 -j ACCEPT**
-  redis默认端口号6379是不允许进行远程连接的，所以在防火墙中设置6379开启远程服务；
-
-- nginx启动出现：Job for nginx.service failed because the control process exited with error code. See "systemctl status nginx.service" and "journalctl -xe" for details
-
-  一般是配置文件有问题
-
-- 不断弹[NACOS HTTP-POST]
-
-  项目中`pom.xml`引入了nacos依赖包却没有读取到对应的配置文件引起的，将配置文件名改成`bootstrap.扩展名`即可解决。
-
-- nacos配置文件中不能写127.0.0.1，要写真是ip
-
-- 初始化filter时tomcat启动不了
-
-  原因是，过滤器中没有[重写](https://so.csdn.net/so/search?q=重写&spm=1001.2101.3001.7020)public void init（）和 public void destroy() 方法，jdk 1.9 之后，可以不写这两个方法，如果用jdk1.8必须要写。
-
-- 项目启动不起来：Failed to configure a DataSource: 'url' attribute is not specified and no embedded datasource could be configured.Reason: Failed to determine a suitable driver class
-
-  禁用掉springboot的数据源自动配置，在启动类注解上添加排除数据源自动配置的参数即可：@SpringBootApplication(exclude= {DataSourceAutoConfiguration.class})//排除数据源的自动配置
-
-- druid的依赖
-
-- 使用ossclient的时候，出现自动注入为null，首先其自动注入类型应该为OSS接口，其次要项目加载起来了才会注入，然后运行，其次测试环境的话要使用以下爱环境才行
-
-  ~~~java
-  import org.junit.Test;
-  @SpringBootTest
-  @RunWith(SpringRunner.class)
-  @Test
-  ~~~
-
-- 如果要更改依赖中的源码
-
-  ~~~
-  只要三步：
-  
-  1.在项目的Maven Dependencies依赖里面，找到你需要修改的包，找到包里面需要修改的class文件。
-  
-  2.在你的src/main/java目录下创建一个和class文件一样的路径，然后创建一样的java文件名。
-  
-  3.把class的源码复制到java文件的源码，就可以直接修改，修改后直接保存，自动生效，也不需要替换回原来的文件，原来的位置。
-  ~~~
-
-- 报错java.lang.NoClassDefFoundError: com/alibaba/nacos/client/logging/NacosLogging
-
-  ~~~java
-  解决办法：升级nacos-config的版本
-          <dependency>
-              <groupId>com.alibaba.cloud</groupId>
-              <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
-              <version>2.2.5.RELEASE</version>
-          </dependency>
-  ~~~
-
-  
-
-- Failed to instantiate [com.zaxxer.hikari.HikariDataSource]: Factory method ‘dataSource‘ threw except
-
-  ~~~java
-  直接再启动来加上
-  @SpringBootApplication(exclude= {DataSourceAutoConfiguration.class})
-  
-  HikariDataSource是spingboot的默认数据源。但是你使用的时候并没有对它进行配置，所以就报错喽
-  ~~~
-
-  
